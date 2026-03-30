@@ -1,0 +1,23 @@
+.success-group {
+    display: flex;
+    margin-bottom: 8px;
+}
+
+.centered {
+    align-items: center;
+}
+
+.success-group p {
+    width: 110px;
+    margin: 0;
+    text-align: right;
+    margin-right: 4px;
+}
+
+.p-gray {
+    color: gray;
+}
+
+img {
+    max-width: 300px;
+}
