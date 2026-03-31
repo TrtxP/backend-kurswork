@@ -15,7 +15,7 @@ $font_size = $_COOKIE['font_size'] ?? '20px';
 <a href="?size=25px">Великий шрифт</a><br>
 <a href="?size=20px">Середній шрийт</a><br>
 <a href="?size=15px">Малий шрифт</a><br>
-<p style="font-size: <?= $font_size; ?>;">Текст зі змінною величиною ширифта</p>
+<p style="font-size: <?= $font_size; ?>;">Текст зі змінною величиною шрифта через cookie</p>
 
 <hr>
 
@@ -136,7 +136,7 @@ if (isset($_POST['delete'])) {
 
 if (file_exists("file1.txt")) {
     $words = explode(" ", file_get_contents("file1.txt"));
-    sort($words);
+    natcasesort($words);
     file_put_contents("sorted.txt", implode(" ", $words));
 }
 ?>
