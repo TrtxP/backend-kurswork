@@ -9,6 +9,7 @@
 </head>
 
 <body>
+    <h1>Завдання 4</h1><br>
     <form action="index4.php" method="post" class="math-form">
         <div class="input-group">
             <label class="mg-labels">x</label>

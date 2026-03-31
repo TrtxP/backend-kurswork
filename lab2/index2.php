@@ -25,6 +25,10 @@ arrayWithRepeatedItems($counts);
 
 echo "<hr>";
 
+?>
+
+<?php
+
 echo "<h1>Завдання 2.2</h1>";
 
 $syllables = ['mi', 'ki', 'pa', 'lo', 'na'];
@@ -40,6 +44,10 @@ function generatePetName($parts) {
 echo ucfirst(generatePetName($syllables));
 
 echo "<hr>";
+
+?>
+
+<?php
 
 echo "<h1>Завдання 2.3</h1>";
 
@@ -74,6 +82,10 @@ echo "<br>Злитий масив:<br>";
 print_r(mergedArray($first, $second));
 
 echo "<hr>";
+
+?>
+
+<?php
 
 echo "<h1>Завдання 2.4</h1>";
 

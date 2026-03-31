@@ -97,7 +97,7 @@ function test_input($data)
         <div class="form-group">
             <label>Пароль: </label>
             <div class="centered">
-                <input type="text" class="inputs" name="password" value="<?php if (isset($_SESSION['data']['password'])) {
+                <input type="password" class="inputs" name="password" value="<?php if (isset($_SESSION['data']['password'])) {
                                                                                 echo $_SESSION['data']['password'];
                                                                             } ?>">
             </div>
@@ -105,7 +105,7 @@ function test_input($data)
         <div class="form-group">
             <label>Пароль (ще раз): </label>
             <div class="centered">
-                <input type="text" class="inputs" name="repeatPass" value="<?php if (isset($_SESSION['data']['repeatPass'])) {
+                <input type="password" class="inputs" name="repeatPass" value="<?php if (isset($_SESSION['data']['repeatPass'])) {
                                                                                 echo $_SESSION['data']['repeatPass'];
                                                                             } ?>">
             </div>
