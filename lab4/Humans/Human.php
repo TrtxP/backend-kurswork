@@ -6,10 +6,10 @@ use Humans\CleaningHouse;
 
 abstract class Human implements CleaningHouse {
     protected int $height;
-    protected float $weight;
+    protected int $weight;
     protected int $year;
 
-    public function __construct(int $height, float $weight, int $year)
+    public function __construct(int $height, int $weight, int $year)
     {
         $this->height = $height;
         $this->weight = $weight;
@@ -20,7 +20,7 @@ abstract class Human implements CleaningHouse {
         return $this->height;
     }
 
-    public function getWeight(): float { 
+    public function getWeight(): int { 
         return $this->weight;
     }
 
@@ -32,7 +32,7 @@ abstract class Human implements CleaningHouse {
         $this->height = $height;
     }
 
-    public function setWeight(float $weight): void {
+    public function setWeight(int $weight): void {
         $this->weight = $weight;
     }
 

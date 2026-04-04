@@ -70,24 +70,54 @@ echo("<h3>Humans</h3>");
 $student = new Student(170, 67, 20, "ZTU", 1);  
 $student->birthMessage(); // Студет повідомляє про народження дитини
 echo("<br>");
+// Тестування GET методів
 printf("Ріст студента: %d<br>", $student->getHeight()); // 170
-printf("Вага студента: %d<br>", $student->getWeight()); // 67
+printf("Вага студента: %f<br>", $student->getWeight()); // 67
 printf("Вік студента: %d<br>", $student->getYear()); // 20
 printf("Навчальний заклад: %s<br>", $student->getUniversity()); // ZTU
 printf("Курс: %d<br>", $student->getCourse()); // 1
+// Переведення студента на наступний курс 
 $student->nextCourse();
 printf("Наступний курс: %d<br>", $student->getCourse()); // 2
 $student->cleaningRoom(); // Студент прибирає кімнату
 
 echo("<br><br>");
 
+// Тестування SET методів
+$student->setHeight(167);
+$student->setWeight(54);
+$student->setYear(22);
+$student->setUniversity("KPI");
+$student->setCourse(3);
+
+printf("Нові дані студента:<br>");
+$student->birthMessage(); // Студет повідомляє про народження дитини
+printf("Ріст студента: %d<br>", $student->getHeight()); // 167
+printf("Вага студента: %d<br>", $student->getWeight()); // 54
+printf("Вік студента: %d<br>", $student->getYear()); // 22
+printf("Навчальний заклад: %s<br>", $student->getUniversity()); // KPI
+printf("Курс: %d<br>", $student->getCourse()); // 3
+$student->nextCourse();
+printf("Наступний курс: %d<br>", $student->getCourse()); // 4
+$student->cleaningKitchen(); // Студент прибирає кухню
+
+echo("<br><br>");
+
 $programmer = new Programmer(180, 70, 21, ["Python"], "Junior");
 $programmer->birthMessage(); // Програміст повідомляє про народження дитини
 echo("<br>");
+// Тестування GET методів
 printf("Ріст програмістa: %d<br>", $programmer->getHeight()); // 180
 printf("Вага програмістa: %d<br>", $programmer->getWeight()); // 70
 printf("Вік програмістa: %d<br>", $programmer->getYear()); // 21
-printf("Стек мов програміста: ", $programmer->getProgramLangs()); // Python
+// Вивід списку мов програмування
+printf("Стек мов програмування: "); 
+$arrayProgramLangs = $programmer->getProgramLangs();
+$length = count($arrayProgramLangs);
+for ($lang = 0; $lang < $length; $lang++) {
+    echo($arrayProgramLangs[$lang]);
+}
+echo("<br>");
 printf("Досвід програміста: %s<br>", $programmer->getWorkExperience()); // Junior
 $programmer->addProgramLang("Java");
 printf("Мова програмування для вивчення: %s<br>", $programmer->getProgramLangs()[1]); // Java
