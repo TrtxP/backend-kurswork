@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="add_notes.css">
+    <title>Завдання 2</title>
+</head>
+<body>
+    <h1>Завдання 2</h1>
+    <form id="add-notes">
+        <h3>Форма додавання заміток</h3>
+        <div class="form-notes">
+            <label for="title">Заголовок:</label>
+            <input type="text" name="title" id="title" placeholder="Введіть заголовок" required>
+        </div>
+        <div class="form-notes">
+            <label for="content">Текст:</label>
+            <textarea name="content" id="content" rows="10" cols="30" placeholder="Введіть будь який зміст тексту..." required></textarea>
+        </div>
+        <div class="form-notes">
+            <input type="submit" value="Додати замітку" id="add-note">
+        </div>
+    </form><br>
+
+    <h3>Список заміток</h3>
+    <div id="list-of-notes">
+    </div><br><br>
+
+    <a href="index.php">На головну</a>
+
+    <script src="add_notes.js" type="module"></script>
+    <script src="edit_note.js" type="module"></script>
+    <script src="delete_note.js" type="module"></script>
+</body>
+</html>

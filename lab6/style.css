@@ -1,0 +1,14 @@
+.form {
+    display: flex;
+    align-items: center;
+}
+
+.form label {
+    width: 120px;
+}
+
+.form input[type=submit] {
+    margin-top: 13px;
+    width: 118px;
+    height: 32px;
+}
