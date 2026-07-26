@@ -70,6 +70,13 @@ if (strpos($uri, '/api/') === 0) {
         exit;
     }
 
+    // Додаткова перевірка авторизації
+    if (!isset($_SESSION['user_id'])) {
+        http_response_code(401);
+        echo json_encode(["status" => "error", "message" => "Користувач не авторизований"]);
+        return;
+    }
+
     if ($uriPath === '/api/auth/logout') {
         $controller->logout();
         exit;
@@ -82,6 +89,11 @@ if (strpos($uri, '/api/') === 0) {
 
     if ($uriPath === '/api/tests/get') {
         $testContoller->getTest($id);
+        exit;
+    }
+
+    if ($uriPath === '/api/tests/all') {
+        $testContoller->getAllTests();
         exit;
     }
 

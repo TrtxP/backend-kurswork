@@ -84,3 +84,38 @@ export type CreativeQuestion = Omit<Question, "id" | "test_id"> & {
 export type CreativeTest = Omit<Test, "id" | "created_at"> & {
   questions: CreativeQuestion[];
 };
+
+export interface TestListProps {
+  role: string;
+  tests: Test[];
+  onStart: (id: number) => void;
+  refreshTests: () => void;
+}
+
+export interface TestPasserProps {
+  test: FullTest;
+  answers: UserAnswersState;
+  testResult: {
+    score: string;
+    correct: number;
+    total: number;
+  } | null;
+  onRadioSelect: (questionId: number, answerId: number) => void;
+  onCheckboxSelect: (questionId: number, answerId: number) => void;
+  onTextChange: (questionId: number, text: string) => void;
+  onSubmit: () => void;
+  onCancel: () => void;
+}
+
+export interface TestConstructorProps {
+  newTest: CreativeTest;
+  setNewTest: React.Dispatch<React.SetStateAction<CreativeTest>>;
+  onAddQuestion: () => void;
+  onRemoveQuestion: (qIdx: number) => void;
+  onQuestionChange: (qIdx: number, field: "question_text" | "points" | "type" | "image_url", value: string | number | null) => void;
+  onAddAnswer: (qIdx: number) => void;
+  onRemoveAnswer: (qIdx: number, aIdx: number) => void;
+  onAnswerChange: (qIdx: number, aIdx: number, field: "answer_text" | "is_correct", value: string | boolean) => void;
+  onSave: () => void;
+  onCancel: () => void;
+}

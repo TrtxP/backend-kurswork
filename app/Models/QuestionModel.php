@@ -2,6 +2,7 @@
 
 namespace app\Models;
 
+use app\Type;
 use PDO;
 
 class QuestionModel
@@ -20,10 +21,10 @@ class QuestionModel
         return $stmt->fetchAll();
     }
 
-    public function create(int $testId, string $question_text, int $points): int
+    public function create(int $testId, string $questionText, int $points, Type $type, string $imageUrl): int
     {
-        $stmt = $this->db->prepare("INSERT INTO questions (test_id, question_text, points) VALUES (?, ?, ?)");
-        $stmt->execute([$testId, $question_text, $points]);
+        $stmt = $this->db->prepare("INSERT INTO questions (test_id, question_text, points, type, image_url) VALUES (?, ?, ?, ?, ?)");
+        $stmt->execute([$testId, $questionText, $points, $type->value, $imageUrl]);
         return (int) $this->db->lastInsertId();
     }
 

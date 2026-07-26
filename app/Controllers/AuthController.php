@@ -17,15 +17,9 @@ class AuthController
     public function login(): void
     {
         header('Content-Type: application/json');
-        
+
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
-        }
-
-        if (isset($_SESSION['user_id'])) {
-            http_response_code(200);
-            echo json_encode(["status" => "success", "redirect" => "/"]);
-            exit;
         }
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') return;
@@ -39,6 +33,18 @@ class AuthController
         if (!$login || !$password) {
             http_response_code(400);
             echo json_encode(["status" => "error", "message" => "Всі поля обов'язкові"]);
+            exit;
+        }
+
+        if (!preg_match('/^[a-zA-Z0-9_]{3, 20}$/', $login)) {
+            http_response_code(400);
+            echo json_encode(["status" => "error", "message" => "Некоректний формат логіну"]);
+            exit;
+        }
+
+        if (!preg_match('/^[0-9]{3, 6}$/', $password)) {
+            http_response_code(400);
+            echo json_encode(["status" => "error", "message" => "Некоректний формат паролю"]);
             exit;
         }
 
@@ -80,6 +86,29 @@ class AuthController
         $groupName = trim($data['group_name'] ?? '');
         $role = $data['role'] === 'student' ? Role::Student : Role::Admin;
 
+        if (!preg_match('/^[a-zA-Z0-9_]{3, 20}$/', $login)) {
+            http_response_code(400);
+            echo json_encode(["status" => "error", "message" => "Некоректний формат логіну"]);
+            exit;
+        }
+
+        if (!preg_match('/^[0-9]{3, 6}$/', $password)) {
+            http_response_code(400);
+            echo json_encode(["status" => "error", "message" => "Некоректний формат паролю"]);
+            exit;
+        }
+
+        if (!preg_match('/^[А-ЯІЇЄҐа-яіїєґ\'’\-]+\s+[А-ЯІЇЄҐа-яіїєґ\'’\-]+(\s+[А-ЯІЇЄҐа-яіїєґ\'’\-]+)?$/u', $fullName)) {
+            http_response_code(400);
+            echo json_encode(["status" => "error", "message" => "Некоректний формат ПІБ"]);
+            exit;
+        }
+
+        if (!preg_match('/^[А-ЯІЇЄҐа-яіїєґA-Z0-9\-]{2, 15}$/', $groupName)) {
+            http_response_code(400);
+            echo json_encode(["status" => "error", "message" => "Некоректний шифр групи"]);
+        }
+
         $isSignedUp = $this->userModel->add($login, $password, $fullName, $role, $groupName);
 
         if ($isSignedUp) {
@@ -112,8 +141,11 @@ class AuthController
         }
 
         session_destroy();
+
         http_response_code(200);
-        echo json_encode(["status" => "success"]);
+        echo json_encode(["status" => "success", "message" => "Logged out"]);
+
+        exit;
     }
 
     public function check(): void

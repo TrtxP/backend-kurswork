@@ -7,6 +7,7 @@ use app\Models\QuestionModel;
 use app\Models\AnswerModel;
 use app\Models\ResultModel;
 use app\Role;
+use app\Type;
 
 class TestController
 {
@@ -41,6 +42,14 @@ class TestController
         echo json_encode($this->testModel->getAll());
     }
 
+    public function getAllTests(): void {
+        header('Content-Type: application/json');
+
+        $tests = $this->testModel->getAll();
+        http_response_code(200);
+        echo json_encode($tests);
+    }
+
     public function getTest(int $id): void
     {
         header('Content-Type: application/json');
@@ -55,8 +64,9 @@ class TestController
 
         $questions = $this->questionModel->getByTestId($id);
 
-        foreach ($questions as $question) {
-            $question['answers'] = $this->answerModel->getByQuestionId($question['id']);
+        foreach ($questions as $key => $question) {
+            $answers = $this->answerModel->getByQuestionId($question['id']) ?: [];
+            $questions[$key]['answers'] = $answers ?: [];
         }
 
         $test['questions'] = $questions;
@@ -70,36 +80,91 @@ class TestController
         header('Content-Type: application/json');
 
         $data = json_decode(file_get_contents('php://input'), true);
-        $selectedAnswerIds = $data['answers'] ?? [];
+        $userAnswers = $data['answers'] ?? [];
 
         $questions = $this->questionModel->getByTestId($test_id);
-        $totalQuestions = count($questions);
 
-        if ($totalQuestions === 0) {
-            http_response_code(400);
-            echo json_encode(["status" => "error", "message" => "Тест порожній"]);
-            return;
+        $totalPossiblePoints = 0; // Загальна кількість балів за тест
+        $earnedPoints = 0; // Бали, які набрав студент 
+
+        // Індексація питань за ID
+        $questionIndexed = [];
+        foreach ($questions as $q) {
+            $questionIndexed[$q['id']] = $q;
+            $totalPossiblePoints += (float)$q['points']; // Сумуємо вагу кожного питання з бази
         }
 
-        $correctAnswersCount = 0;
+        foreach ($userAnswers as $userAnswer) {
+            $qId = $userAnswer['question_id'];
 
-        foreach ($selectedAnswerIds as $answerId) {
-            if ($this->answerModel->is_correct($answerId)) {
-                $correctAnswersCount++;
+            if (!isset($questionIndexed[$qId])) {
+                continue;
+            }
+
+            $question = $questionIndexed[$qId];
+            $realType = $question['type'];
+            $questionPoints = (float)$question['points']; // Вага поточного питання
+
+            switch ($realType) {
+                case Type::Radio->value:
+                    $selectedId = $userAnswer['selected_id'] ?? null;
+                    if ($selectedId && $this->answerModel->is_correct($selectedId)) {
+                        $earnedPoints += $questionPoints; // Додаємо бал за питання
+                    }
+                    break;
+
+                case Type::CheckBox->value:
+                    // 1. Отримування з фронтенду масив обраних студентом ID
+                    $selectedIds = $userAnswer['selected_ids'] ?? []; // обробка стейту selected_ids
+                    if (!is_array($selectedIds)) {
+                        $selectedIds = [];
+                    }
+
+                    // 2. Витягування усіх варіантів відповідей для цього питання з бази
+                    $allAnswers = $this->answerModel->getByQuestionId($qId) ?: [];
+
+                    // 3. Формуємо масив ID тих відповідей, які насправді є правильними в базі
+                    $correctIdsFromDb = [];
+                    foreach ($allAnswers as $ans) {
+                        if (!empty($ans['is_correct'])) {
+                            $correctIdsFromDb[] = (int)$ans['id'];
+                        }
+                    }
+
+                    // Перетворюємо масив студента в цілі числа для безпечного порівняння
+                    $selectedIds = array_map('intval', $selectedIds);
+
+                    // 4. Перевірка: масиви мають бути ідентичними (сортуємо їх для точного порівняння)
+                    sort($selectedIds);
+                    sort($correctIdsFromDb);
+
+                    // Якщо обрані ID точно збігаються з правильними ID з бази — зараховуємо бал
+                    if ($selectedIds === $correctIdsFromDb && !empty($correctIdsFromDb)) {
+                        $earnedPoints += $questionPoints;
+                    }
+                    break;
+
+                case Type::Text->value:
+                    $correctAnswerRow = $this->answerModel->getByQuestionId($qId)[0] ?? null;
+                    $userText = trim($userAnswer['user_text'] ?? '');
+
+                    if ($correctAnswerRow && mb_strtolower($userText) === mb_strtolower($correctAnswerRow['answer_text'])) {
+                        $earnedPoints += $questionPoints;
+                    }
+                    break;
             }
         }
 
-        $finalScore = ($correctAnswersCount / $totalQuestions) * 100;
+        $finalScore = ($totalPossiblePoints > 0) ? ($earnedPoints / $totalPossiblePoints) * 100 : 0;
 
         $user_id = $_SESSION['user_id'];
-
         $this->resultModel->add($user_id, $test_id, $finalScore);
 
         echo json_encode([
             "status" => "success",
             "score" => number_format($finalScore, 2),
-            "correct" => $correctAnswersCount,
-            "total" => $totalQuestions
+            "correct" => $earnedPoints,
+            "total" => $totalPossiblePoints
         ]);
     }
 
@@ -107,7 +172,7 @@ class TestController
     {
         header('Content-Type: application/json');
 
-        if ($_SESSION['role'] !== Role::Admin) {
+        if ($_SESSION['role'] !== Role::Admin->value) {
             http_response_code(403);
             echo json_encode(["status" => "error", "message" => "Доступ заборонено"]);
             return;
@@ -118,7 +183,10 @@ class TestController
         $testId = $this->testModel->create($data['title'], $data['description'], $data['time_limit'], $data['is_fullscreen'], $data['disable_copy']);
 
         foreach ($data['questions'] as $qData) {
-            $qId = $this->questionModel->create($testId, $qData['question_text'], $qData['points']);
+            $imageUrl = $qData['image_url'] ?? null;
+            $enumType = Type::from($qData['type']);
+
+            $qId = $this->questionModel->create($testId, $qData['question_text'], $qData['points'], $enumType, $imageUrl);
 
             foreach ($qData['answers'] as $aData) {
                 $this->answerModel->create($qId, $aData['answer_text'], $aData['is_correct']);
@@ -132,7 +200,7 @@ class TestController
     {
         header('Content-Type: application/json');
 
-        if ($_SESSION['role'] !== Role::Admin) {
+        if ($_SESSION['role'] !== Role::Admin->value) {
             http_response_code(403);
             echo json_encode(["status" => "error", "message" => "Доступ заборонено"]);
             return;
@@ -146,7 +214,7 @@ class TestController
         $this->questionModel->deleteByTestId($id);
 
         foreach ($data['questions'] as $qData) {
-            $newQuestionId = $this->questionModel->create($id, $qData['question_text'], $qData['points']);
+            $newQuestionId = $this->questionModel->create($id, $qData['question_text'], $qData['points'], $qData['type'], $qData['image_url']);
 
             foreach ($qData['answers'] as $aData) {
                 $this->answerModel->create($newQuestionId, $aData['answer_text'], $aData['is_correct']);
@@ -160,7 +228,7 @@ class TestController
     {
         header('Content-Type: application/json');
 
-        if ($_SESSION['role'] !== Role::Admin) {
+        if ($_SESSION['role'] !== Role::Admin->value) {
             http_response_code(403);
             echo json_encode(["status" => "error", "message" => "Доступ заборонено"]);
             return;

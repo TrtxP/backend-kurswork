@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { AuthCheckResponse, Test } from "./types";
 import Login from "./components/Login";
 import Register from "./components/Register";
@@ -16,8 +16,8 @@ export default function App() {
     setIsRegistering(true);
   };
 
-  const loadTests = () => {
-    fetch("http://localhost/backend-kurswork/public/api/tests", {
+  const loadTests = useCallback(() => {
+    fetch("http://localhost/backend-kurswork/public/api/tests/all", {
       method: "GET",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -29,11 +29,19 @@ export default function App() {
 
         return res.json();
       })
-      .then((data) => setTests(Array.isArray(data) ? data : []))
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setTests(data)
+        } else if (data && data.status === 'success' && Array.isArray(data.tests)) {
+          setTests(data.tests)
+        } else {
+          setTests([])
+        }
+      })
       .catch((err) => console.error(`Помилка завантаження тестів: ${err}`));
-  };
+  }, []);
 
-  const checkAuth = () => {
+  const checkAuth = useCallback(() => {
     fetch("http://localhost/backend-kurswork/public/api/auth/check", {
       method: "GET",
       headers: { "Content-Type": "application/json" },
@@ -59,11 +67,11 @@ export default function App() {
         setAuthState({ isLoggedIn: false });
       })
       .finally(() => setLoading(false));
-  };
+  }, [loadTests]);
 
   useEffect(() => {
     checkAuth();
-  }, []);
+  }, [checkAuth]);
 
   if (loading)
     return (
