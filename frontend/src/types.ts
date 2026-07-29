@@ -95,6 +95,7 @@ export interface TestListProps {
 export interface TestPasserProps {
   test: FullTest;
   answers: UserAnswersState;
+  timeLeft: number | null;
   testResult: {
     score: string;
     correct: number;

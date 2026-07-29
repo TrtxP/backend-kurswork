@@ -64,6 +64,7 @@ export default function Dashboard({
       <TestPasser
         test={passer.activeTest}
         answers={passer.answers}
+        timeLeft={passer.timeLeft}
         testResult={passer.testResult}
         onRadioSelect={passer.handleRadioSelect}
         onCheckboxSelect={passer.handleCheckboxSelect}
