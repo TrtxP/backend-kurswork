@@ -33,19 +33,19 @@ class AuthController
         if (!$login || !$password) {
             http_response_code(400);
             echo json_encode(["status" => "error", "message" => "Всі поля обов'язкові"]);
-            exit;
+            return;
         }
 
-        if (!preg_match('/^[a-zA-Z0-9_]{3, 20}$/', $login)) {
+        if (!preg_match('/^[a-zA-Z0-9_]{3,20}$/', $login)) {
             http_response_code(400);
             echo json_encode(["status" => "error", "message" => "Некоректний формат логіну"]);
-            exit;
+            return;
         }
 
-        if (!preg_match('/^[0-9]{3, 6}$/', $password)) {
+        if (!preg_match('/^[0-9]{3,6}$/', $password)) {
             http_response_code(400);
             echo json_encode(["status" => "error", "message" => "Некоректний формат паролю"]);
-            exit;
+            return;
         }
 
         $user = $this->userModel->findByLogin($login);
