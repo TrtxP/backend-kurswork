@@ -1,8 +1,10 @@
 import type { TestPasserProps } from "../../types";
+import { formatTime } from "../../utils/formatTime";
 
 export default function TestPasser({
   test,
   answers,
+  timeLeft,
   testResult,
   onRadioSelect,
   onCheckboxSelect,
@@ -39,6 +41,10 @@ export default function TestPasser({
           <div>
             <div className="alert alert-warning py-2">
               Обмеження часу: {test.time_limit} хв
+            </div>
+
+            <div className="alert alert-info py-2">
+              Часу залишилося: {formatTime(timeLeft)}
             </div>
 
             {test.questions.map((question, qIdx) => (

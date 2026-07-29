@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FullTest, UserAnswersState } from "../types";
 
 export function useTestPasser() {
@@ -9,6 +9,8 @@ export function useTestPasser() {
     correct: number;
     total: number;
   } | null>(null);
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const internalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const handleStartTest = (id: number) => {
     fetch(`http://localhost/backend-kurswork/public/api/tests/get?id=${id}`, {
@@ -18,10 +20,45 @@ export function useTestPasser() {
       .then((res) => res.json())
       .then((data: FullTest) => {
         setActiveTest(data);
+        startTimer(data.time_limit)
         setAnswers({});
         setTestResult(null);
       });
   };
+
+  const startTimer = (minutes: number) => {
+    stopTimer();
+    setTimeLeft(minutes * 60);
+
+    internalRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev == null) return null;
+
+        if (prev <= 1) {
+          stopTimer();
+          handleSubmitTest();
+          return 0;
+        }
+
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const stopTimer = () => {
+    if (internalRef.current) {
+      clearInterval(internalRef.current);
+      internalRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (internalRef.current) {
+        clearInterval(internalRef.current);
+      }
+    };
+  }, []);
 
   const handleRadioSelect = (questionId: number, answerId: number) => {
     setAnswers((prev) => ({
@@ -84,6 +121,8 @@ export function useTestPasser() {
     setActiveTest(null);
     setAnswers({});
     setTestResult(null);
+    setTimeLeft(null);
+    stopTimer();
   };
 
   return {
@@ -93,6 +132,7 @@ export function useTestPasser() {
     setAnswers,
     testResult,
     setTestResult,
+    timeLeft,
     handleStartTest,
     handleRadioSelect,
     handleCheckboxSelect,
