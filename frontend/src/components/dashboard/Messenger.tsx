@@ -18,6 +18,11 @@ export default function Messenger({
   
   const ws = useRef<WebSocket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const activeChatRef = useRef<Chat | null>(null);
+
+  useEffect(() => {
+    activeChatRef.current = activeChat;
+  }, [activeChat]);
 
   // Fetch chats on mount
   useEffect(() => {
@@ -41,7 +46,7 @@ export default function Messenger({
         // Якщо повідомлення належить до активного чату, додаємо його до списку
         setMessages(prev => {
           // Якщо це повідомлення для поточного чату
-          if (activeChat && newMsg.chat_id === activeChat.id) {
+          if (activeChatRef.current && newMsg.chat_id === activeChatRef.current.id) {
             // Перевіряємо, чи немає його вже (уникаємо дублів)
             if (!prev.find(m => m.id === newMsg.id)) {
               return [...prev, newMsg];
@@ -62,7 +67,7 @@ export default function Messenger({
         ws.current.close();
       }
     };
-  }, [currentUser, activeChat]);
+  }, [currentUser]);
 
   // Скрол до останнього повідомлення
   useEffect(() => {
