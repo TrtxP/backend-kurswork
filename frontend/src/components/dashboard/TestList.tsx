@@ -29,36 +29,38 @@ export default function TestList({
                       Розпочати тестування
                     </button>
                   ) : (
-                    <div className="d-flex gap-2">
+                    <div className="d-flex flex-column gap-2">
+                      <div className="d-flex gap-2">
+                        <button
+                          className="btn btn-outline-warning btn-sm flex-grow-1"
+                          onClick={() => onEdit(test.id)}
+                        >
+                          Редагувати
+                        </button>
+                        <button
+                          className="btn btn-outline-danger btn-sm flex-grow-1"
+                          onClick={() => {
+                            if (
+                              confirm(
+                                `Видалити цей тест та всі зв'язані питання?`,
+                              )
+                            ) {
+                              fetch(
+                                `http://localhost/backend-kurswork/public/api/tests/delete?id=${test.id}`,
+                                {
+                                  method: "DELETE",
+                                  headers: { "Content-Type": "application/json" },
+                                  credentials: "include",
+                                },
+                              ).then(() => refreshTests());
+                            }
+                          }}
+                        >
+                          Видалити
+                        </button>
+                      </div>
                       <button
-                        className="btn btn-outline-warning btn-sm flex-grow-1"
-                        onClick={() => onEdit(test.id)}
-                      >
-                        Редагувати
-                      </button>
-                      <button
-                        className="btn btn-outline-danger btn-sm"
-                        onClick={() => {
-                          if (
-                            confirm(
-                              `Видалити цей тест та всі зв'язані питання?`,
-                            )
-                          ) {
-                            fetch(
-                              `http://localhost/backend-kurswork/public/api/tests/delete?id=${test.id}`,
-                              {
-                                method: "DELETE",
-                                headers: { "Content-Type": "application/json" },
-                                credentials: "include",
-                              },
-                            ).then(() => refreshTests());
-                          }
-                        }}
-                      >
-                        Видалити
-                      </button>
-                      <button
-                        className="btn btn-success w-100"
+                        className="btn btn-success btn-sm w-100"
                         onClick={() => onStart(test.id)}
                       >
                         Розпочати тестування
