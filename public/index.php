@@ -1,4 +1,5 @@
 <?php
+ob_start(); // Увімкнення буферизації виводу
 
 // Налаштування CORS доступу
 header('Access-Control-Allow-Origin: http://localhost:5173');
@@ -41,6 +42,52 @@ if (strpos($uri, '/api/') === 0) {
     header('Content-Type: application/json; charset=utf8');
 
     $uriPath = parse_url($uri, PHP_URL_PATH);
+
+    // ==========================================
+    // ЛОГІКА БУФЕРИЗАЦІЇ ТА КЕШУВАННЯ
+    // ==========================================
+    $cacheDir = __DIR__ . '/../cache/';
+    if (!is_dir($cacheDir)) {
+        mkdir($cacheDir, 0777, true);
+    }
+
+    $cacheableRoutes = [
+        '/api/tests' => 120, // 2 хвилини
+        '/api/profile/history' => 60 // 1 хвилина
+    ];
+
+    $isCacheable = ($_SERVER['REQUEST_METHOD'] === 'GET' && array_key_exists($uriPath, $cacheableRoutes));
+    $cacheFile = '';
+    $cacheTime = 0;
+
+    if ($isCacheable) {
+        $userId = $_SESSION['user_id'] ?? 'guest';
+        $cacheKey = md5($uriPath . '_' . $userId);
+        $cacheFile = $cacheDir . $cacheKey . '.json';
+        $cacheTime = $cacheableRoutes[$uriPath];
+
+        if (file_exists($cacheFile) && (time() - filemtime($cacheFile) < $cacheTime)) {
+            header('X-Cache: HIT');
+            echo file_get_contents($cacheFile);
+            exit;
+        }
+    }
+
+    // Реєстрація функції, яка виконається в кінці скрипта
+    register_shutdown_function(function() use ($isCacheable, $cacheFile) {
+        $output = ob_get_clean();
+        $status = http_response_code();
+        
+        // Кешуємо тільки успішні відповіді (200 OK)
+        if ($isCacheable && $status === 200 && !empty($output)) {
+            file_put_contents($cacheFile, $output);
+            header('X-Cache: MISS'); // Хоча заголовки можуть бути вже відправлені, PHP дозволяє це якщо буфер ще не виведено (але ми вже вивели? Ні, ми його тільки зараз виводимо)
+            // header() тут може не спрацювати, якщо exit викликано раніше, але збереження у файл працюватиме ідеально.
+        }
+        
+        echo $output;
+    });
+    // ==========================================
 
     $db = new \app\Models\Database();
     $connection = $db->getConnection();
