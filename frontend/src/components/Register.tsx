@@ -55,7 +55,7 @@ export default function Register({
             </p>
             <form onSubmit={handleRegister}>
               <div className="mb-3">
-                <label className="form-label small fw-bold">Логін</label>
+                <label className="form-label small fw-bold w-100 text-start">Логін</label>
                 <input
                   type="text"
                   className="form-control"
@@ -65,7 +65,7 @@ export default function Register({
                 />
               </div>
               <div className="mb-4">
-                <label className="form-label small fw-bold">Пароль</label>
+                <label className="form-label small fw-bold w-100 text-start">Пароль</label>
                 <input
                   type="password"
                   className="form-control"
@@ -75,7 +75,7 @@ export default function Register({
                 />
               </div>
               <div className="mb-4">
-                <label className="form-label small fw-bold">ПІБ</label>
+                <label className="form-label small fw-bold w-100 text-start">ПІБ</label>
                 <input
                   type="text"
                   className="form-control"
@@ -85,8 +85,8 @@ export default function Register({
                 />
               </div>
               <div className="mb-4">
-                <label className="form-label small fw-bold">Роль</label>
-                <div className="form-check">
+                <label className="form-label small fw-bold w-100 text-start">Роль</label>
+                <div className="form-check text-start">
                   <input
                     className="form-check-input"
                     type="radio"
@@ -99,7 +99,7 @@ export default function Register({
                   />
                   <label htmlFor="student">студент</label>
                 </div>
-                <div className="form-check">
+                <div className="form-check text-start">
                   <input
                     className="form-check-input"
                     type="radio"
@@ -113,13 +113,13 @@ export default function Register({
                   <label htmlFor="admin">викладач</label>
                 </div>
                 {role && (
-                  <label className="form-label small">
+                  <label className="form-label small w-100 text-start">
                     Ваша обрана роль: <strong>{role}</strong>
                   </label>
                 )}
               </div>
               <div className="mb-4">
-                <label className="form-label small fw-bold">Назва групи</label>
+                <label className="form-label small fw-bold w-100 text-start">Назва групи</label>
                 <input
                   type="text"
                   className="form-control"
