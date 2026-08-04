@@ -51,8 +51,12 @@ if (strpos($uri, '/api/') === 0) {
     $questionModel = new \app\Models\QuestionModel($connection);
     $answerModel = new \app\Models\AnswerModel($connection);
 
+    $chatModel = new \app\Models\ChatModel($connection);
+    $messageModel = new \app\Models\MessageModel($connection);
+
     $controller = new \app\Controllers\AuthController($userModel);
     $testContoller = new \app\Controllers\TestController($testModel, $questionModel, $answerModel, $resultModel);
+    $chatController = new \app\Controllers\ChatController($chatModel, $messageModel, $userModel);
     $id = $_GET['id'] ?? null;
 
     $userController = new \app\Controllers\UserController($userModel, $resultModel);
@@ -96,6 +100,26 @@ if (strpos($uri, '/api/') === 0) {
 
     if ($uriPath === '/api/profile/avatar/delete') {
         $userController->delete_avatar();
+        exit;
+    }
+
+    if ($uriPath === '/api/chats') {
+        $chatController->get_chats();
+        exit;
+    }
+
+    if ($uriPath === '/api/chats/messages') {
+        $chatController->get_messages();
+        exit;
+    }
+
+    if ($uriPath === '/api/chats/start') {
+        $chatController->start_chat();
+        exit;
+    }
+
+    if ($uriPath === '/api/users/search') {
+        $chatController->search_users();
         exit;
     }
 

@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import type { DashboardProps } from "../types";
+import type { DashboardProps, User } from "../types";
 import { useTestConstructor } from "../hooks/useTestConstructor";
 import { useTestPasser } from "../hooks/useTestPasser";
 import TestList from "./dashboard/TestList";
 import TestPasser from "./dashboard/TestPasser";
 import TestConstructor from "./dashboard/TestConstructor";
 import UserProfile from "./dashboard/UserProfile";
+import Messenger from "./dashboard/Messenger";
 
 export default function Dashboard({
   role,
@@ -14,9 +15,23 @@ export default function Dashboard({
   refreshTests,
 }: DashboardProps) {
   const [showProfile, setShowProfile] = useState(false);
+  const [showMessenger, setShowMessenger] = useState(false);
+  
+  // Ми створюємо об'єкт currentUser з доступних пропсів (оскільки повний об'єкт тут відсутній, 
+  // але ID ми знаємо на бекенді через сесію. Для Messenger нам треба знати хоча б id поточного користувача. 
+  // В App.tsx ми його не отримуємо з AuthCheckResponse. 
+  // Тому для підключення до WebSockets ми можемо звернутися до /api/profile або використовувати ID з іншого джерела.
+  // Але оскільки в Messenger.tsx є props currentUser, краще отримувати currentUser всередині Messenger, 
+  // або в Dashboard). Оновимо це зараз.
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
     refreshTests();
+    // Отримуємо профіль для отримання власного ID
+    fetch("http://localhost/backend-kurswork/public/api/profile", { credentials: "include" })
+      .then(res => res.json())
+      .then(data => setCurrentUser(data))
+      .catch(() => {});
   }, [refreshTests]);
 
   const constructor = useTestConstructor(refreshTests);
@@ -30,6 +45,10 @@ export default function Dashboard({
 
   if (showProfile) {
     return <UserProfile onClose={() => setShowProfile(false)} />;
+  }
+
+  if (showMessenger) {
+    return <Messenger onClose={() => setShowMessenger(false)} currentUser={currentUser} />;
   }
 
   if (constructor.isCreating) {
@@ -76,12 +95,20 @@ export default function Dashboard({
             {role === "admin" ? "Викладач: " : "Студент: "}
             {full_name || "Невідомо"}
           </p>
-          <button
-            className="btn btn-outline-info btn-sm"
-            onClick={() => setShowProfile(true)}
-          >
-            Переглянути профіль
-          </button>
+          <div className="d-flex gap-2">
+            <button
+              className="btn btn-outline-info btn-sm"
+              onClick={() => setShowProfile(true)}
+            >
+              Переглянути профіль
+            </button>
+            <button
+              className="btn btn-outline-primary btn-sm"
+              onClick={() => setShowMessenger(true)}
+            >
+              Повідомлення
+            </button>
+          </div>
         </div>
         <button className="btn btn-outline-danger" onClick={handleLogout}>
           Вийти

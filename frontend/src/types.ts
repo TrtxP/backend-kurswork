@@ -20,6 +20,24 @@ export interface User {
   created_at: string;
 }
 
+export interface Chat {
+  id: number;
+  partner_id: number;
+  partner_name: string;
+  partner_avatar?: string | null;
+  last_message?: string | null;
+  updated_at: string;
+}
+
+export interface Message {
+  id: number;
+  chat_id: number;
+  sender_id: number;
+  message_text: string;
+  is_read: boolean;
+  created_at: string;
+}
+
 export interface Test {
   id: number;
   title: string;
