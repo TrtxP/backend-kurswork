@@ -16,6 +16,9 @@ export default function TestList({
               <div className="card-body">
                 <h5 className="card-title text-dark">{test.title}</h5>
                 <p className="card-text text-muted small">{test.description}</p>
+                <div className="alert alert-warning py-2">
+                  Обмеження часу: {test.time_limit} хв
+                </div>
                 <div className="card-footer bg-transparent border-top-0 p-3">
                   {role === "student" ? (
                     <button

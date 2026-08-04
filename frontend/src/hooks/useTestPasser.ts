@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { FullTest, UserAnswersState } from "../types";
 
 export function useTestPasser() {
@@ -10,96 +10,33 @@ export function useTestPasser() {
     total: number;
   } | null>(null);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
-  const internalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const handleStartTest = (id: number) => {
-    fetch(`http://localhost/backend-kurswork/public/api/tests/get?id=${id}`, {
-      method: "GET",
-      credentials: "include",
-    })
-      .then((res) => res.json())
-      .then((data: FullTest) => {
-        setActiveTest(data);
-        startTimer(data.time_limit)
-        setAnswers({});
-        setTestResult(null);
-      });
-  };
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const activeTestRef = useRef<FullTest | null>(null);
+  const answersRef = useRef<UserAnswersState>({});
+  const hasSubmittedRef = useRef(false);
 
-  const startTimer = (minutes: number) => {
-    stopTimer();
-    setTimeLeft(minutes * 60);
-
-    internalRef.current = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev == null) return null;
-
-        if (prev <= 1) {
-          stopTimer();
-          handleSubmitTest();
-          return 0;
-        }
-
-        return prev - 1;
-      });
-    }, 1000);
-  };
-
-  const stopTimer = () => {
-    if (internalRef.current) {
-      clearInterval(internalRef.current);
-      internalRef.current = null;
+  const stopTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
     }
-  };
-
-  useEffect(() => {
-    return () => {
-      if (internalRef.current) {
-        clearInterval(internalRef.current);
-      }
-    };
   }, []);
 
-  const handleRadioSelect = (questionId: number, answerId: number) => {
-    setAnswers((prev) => ({
-      ...prev,
-      [questionId]: { question_id: questionId, selected_id: answerId },
-    }));
-  };
+  const submitCurrentTest = useCallback(() => {
+    const test = activeTestRef.current;
 
-  const handleCheckboxSelect = (questionId: number, answerId: number) => {
-    setAnswers((prev) => {
-      const currentSelection: number[] = prev[questionId]?.selected_ids || [];
-      const updatedSelection = currentSelection.includes(answerId)
-        ? currentSelection.filter((id) => id !== answerId)
-        : [...currentSelection, answerId];
+    if (!test || hasSubmittedRef.current) return;
 
-      return {
-        ...prev,
-        [questionId]: {
-          question_id: questionId,
-          selected_ids: updatedSelection,
-        },
-      };
-    });
-  };
-
-  const handleTextChange = (questionId: number, text: string) => {
-    setAnswers((prev) => ({
-      ...prev,
-      [questionId]: { question_id: questionId, user_text: text },
-    }));
-  };
-
-  const handleSubmitTest = () => {
-    if (!activeTest) return;
+    hasSubmittedRef.current = true;
+    stopTimer();
 
     fetch(
-      `http://localhost/backend-kurswork/public/api/tests/submit?id=${activeTest.id}`,
+      `http://localhost/backend-kurswork/public/api/tests/submit?id=${test.id}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ answers: Object.values(answers) }),
+        body: JSON.stringify({ answers: Object.values(answersRef.current) }),
         credentials: "include",
       },
     )
@@ -111,18 +48,96 @@ export function useTestPasser() {
             correct: data.correct,
             total: data.total,
           });
-        } else {
-          alert(data.message || "Помилка під час збереження результатів");
+          return;
         }
+
+        hasSubmittedRef.current = false;
+        alert(data.message || "Помилка під час збереження результатів");
+      })
+      .catch(() => {
+        hasSubmittedRef.current = false;
+        alert("Не вдалося зберегти результати. Спробуйте здати тест ще раз.");
+      });
+  }, [stopTimer]);
+
+  const startTimer = (minutes: number) => {
+    stopTimer();
+    setTimeLeft(minutes * 60);
+
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => (prev == null ? null : Math.max(prev - 1, 0)));
+    }, 1000);
+  };
+
+  const handleStartTest = (id: number) => {
+    fetch(`http://localhost/backend-kurswork/public/api/tests/get?id=${id}`, {
+      method: "GET",
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data: FullTest) => {
+        hasSubmittedRef.current = false;
+        setActiveTest(data);
+        activeTestRef.current = data;
+        setAnswers({});
+        answersRef.current = {};
+        setTestResult(null);
+        startTimer(data.time_limit);
       });
   };
 
+  useEffect(() => stopTimer, [stopTimer]);
+
+  useEffect(() => {
+    if (timeLeft === 0) submitCurrentTest();
+  }, [timeLeft, submitCurrentTest]);
+
+  const handleRadioSelect = (questionId: number, answerId: number) => {
+    setAnswers((prev) => {
+      const next = {
+        ...prev,
+        [questionId]: { question_id: questionId, selected_id: answerId },
+      };
+      answersRef.current = next;
+      return next;
+    });
+  };
+
+  const handleCheckboxSelect = (questionId: number, answerId: number) => {
+    setAnswers((prev) => {
+      const currentSelection = prev[questionId]?.selected_ids || [];
+      const selectedIds = currentSelection.includes(answerId)
+        ? currentSelection.filter((id) => id !== answerId)
+        : [...currentSelection, answerId];
+      const next = {
+        ...prev,
+        [questionId]: { question_id: questionId, selected_ids: selectedIds },
+      };
+      answersRef.current = next;
+      return next;
+    });
+  };
+
+  const handleTextChange = (questionId: number, text: string) => {
+    setAnswers((prev) => {
+      const next = {
+        ...prev,
+        [questionId]: { question_id: questionId, user_text: text },
+      };
+      answersRef.current = next;
+      return next;
+    });
+  };
+
   const handleCancelTest = () => {
+    stopTimer();
+    hasSubmittedRef.current = false;
     setActiveTest(null);
+    activeTestRef.current = null;
     setAnswers({});
+    answersRef.current = {};
     setTestResult(null);
     setTimeLeft(null);
-    stopTimer();
   };
 
   return {
@@ -137,7 +152,7 @@ export function useTestPasser() {
     handleRadioSelect,
     handleCheckboxSelect,
     handleTextChange,
-    handleSubmitTest,
+    handleSubmitTest: submitCurrentTest,
     handleCancelTest,
   };
 }

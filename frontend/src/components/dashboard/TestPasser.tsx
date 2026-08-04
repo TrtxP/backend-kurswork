@@ -39,10 +39,6 @@ export default function TestPasser({
           </div>
         ) : (
           <div>
-            <div className="alert alert-warning py-2">
-              Обмеження часу: {test.time_limit} хв
-            </div>
-
             <div className="alert alert-info py-2">
               Часу залишилося: {formatTime(timeLeft)}
             </div>
