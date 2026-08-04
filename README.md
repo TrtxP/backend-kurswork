@@ -46,6 +46,21 @@ If your frontend is located inside this repository under `frontend/`, follow the
 
 6. Test backend endpoints in a browser or with curl/Postman: http://localhost/backend-kurswork/api/...
 
+### WebSockets & Real-time Messaging Setup
+
+The project uses [Ratchet PHP](http://socketo.me/) for real-time chat functionality.
+
+1. Install PHP dependencies using Composer (if you haven't already):
+   - Open a terminal in the root directory (`c:\wamp64\www\backend-kurswork`).
+   - Run `composer install` to download all necessary packages (including Ratchet) into the `vendor/` directory.
+   - Run `composer dump-autoload` to generate the correct autoload mappings.
+
+2. Start the WebSocket Server (Required for Messaging):
+   - The WebSocket server must run continuously in the background for chats to work.
+   - For Windows users: Simply double-click the `start_websockets.bat` script located in the root folder (`c:\wamp64\www\backend-kurswork\start_websockets.bat`).
+   - Alternatively, open a terminal in the root directory and run the command manually: `php bin/websocket.php`
+   - You should see a message indicating the WebSocket Server has started. Do not close this terminal window while using the application.
+
 ## Frontend setup (Vite)
 
 If the frontend is a separate Vite project, open a terminal in the frontend folder and run:

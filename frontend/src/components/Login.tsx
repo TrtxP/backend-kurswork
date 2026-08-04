@@ -47,7 +47,7 @@ export default function Login({
             </p>
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
-                <label className="form-label small fw-bold">Логін</label>
+                <label className="form-label small fw-bold w-100 text-start">Логін</label>
                 <input
                   type="text"
                   className="form-control"
@@ -57,7 +57,7 @@ export default function Login({
                 />
               </div>
               <div className="mb-4">
-                <label className="form-label small fw-bold">Пароль</label>
+                <label className="form-label small fw-bold w-100 text-start">Пароль</label>
                 <input
                   type="password"
                   className="form-control"

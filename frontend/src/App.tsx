@@ -97,6 +97,7 @@ export default function App() {
   return (
     <Dashboard
       role={authState.role ?? "student"}
+      full_name={authState.full_name}
       initialTests={tests}
       refreshTests={loadTests}
     />

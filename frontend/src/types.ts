@@ -6,6 +6,7 @@ export interface RegisterCheckResponse {
 export interface AuthCheckResponse {
   isLoggedIn: boolean;
   role?: "admin" | "student";
+  full_name?: string;
 }
 
 export interface User {
@@ -15,6 +16,25 @@ export interface User {
   full_name: string;
   role: string;
   group_name: string;
+  avatar_url?: string | null;
+  created_at: string;
+}
+
+export interface Chat {
+  id: number;
+  partner_id: number;
+  partner_name: string;
+  partner_avatar?: string | null;
+  last_message?: string | null;
+  updated_at: string;
+}
+
+export interface Message {
+  id: number;
+  chat_id: number;
+  sender_id: number;
+  message_text: string;
+  is_read: boolean;
   created_at: string;
 }
 
@@ -48,6 +68,7 @@ export interface Result {
   id: number;
   user_id: number;
   test_id: number;
+  test_title?: string; // Додано для зручності
   score: number;
   completed_at: Date;
 }
@@ -62,6 +83,7 @@ export interface FullTest extends Test {
 
 export interface DashboardProps {
   role: "admin" | "student";
+  full_name?: string;
   initialTests: Test[];
   refreshTests: () => void;
 }
@@ -89,6 +111,7 @@ export interface TestListProps {
   role: string;
   tests: Test[];
   onStart: (id: number) => void;
+  onEdit: (id: number) => void;
   refreshTests: () => void;
 }
 
@@ -96,6 +119,8 @@ export interface TestPasserProps {
   test: FullTest;
   answers: UserAnswersState;
   timeLeft: number | null;
+  fullscreenPhase: import("./hooks/useTestPasser").FullscreenPhase;
+  violationCount: number;
   testResult: {
     score: string;
     correct: number;

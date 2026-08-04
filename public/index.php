@@ -1,8 +1,9 @@
 <?php
+ob_start(); // Увімкнення буферизації виводу
 
 // Налаштування CORS доступу
 header('Access-Control-Allow-Origin: http://localhost:5173');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 header('Access-Control-Allow-Credentials: true');
 
@@ -42,6 +43,52 @@ if (strpos($uri, '/api/') === 0) {
 
     $uriPath = parse_url($uri, PHP_URL_PATH);
 
+    // ==========================================
+    // ЛОГІКА БУФЕРИЗАЦІЇ ТА КЕШУВАННЯ
+    // ==========================================
+    $cacheDir = __DIR__ . '/../cache/';
+    if (!is_dir($cacheDir)) {
+        mkdir($cacheDir, 0777, true);
+    }
+
+    $cacheableRoutes = [
+        '/api/tests' => 120, // 2 хвилини
+        '/api/profile/history' => 60 // 1 хвилина
+    ];
+
+    $isCacheable = ($_SERVER['REQUEST_METHOD'] === 'GET' && array_key_exists($uriPath, $cacheableRoutes));
+    $cacheFile = '';
+    $cacheTime = 0;
+
+    if ($isCacheable) {
+        $userId = $_SESSION['user_id'] ?? 'guest';
+        $cacheKey = md5($uriPath . '_' . $userId);
+        $cacheFile = $cacheDir . $cacheKey . '.json';
+        $cacheTime = $cacheableRoutes[$uriPath];
+
+        if (file_exists($cacheFile) && (time() - filemtime($cacheFile) < $cacheTime)) {
+            header('X-Cache: HIT');
+            echo file_get_contents($cacheFile);
+            exit;
+        }
+    }
+
+    // Реєстрація функції, яка виконається в кінці скрипта
+    register_shutdown_function(function() use ($isCacheable, $cacheFile) {
+        $output = ob_get_clean();
+        $status = http_response_code();
+        
+        // Кешуємо тільки успішні відповіді (200 OK)
+        if ($isCacheable && $status === 200 && !empty($output)) {
+            file_put_contents($cacheFile, $output);
+            header('X-Cache: MISS'); // Хоча заголовки можуть бути вже відправлені, PHP дозволяє це якщо буфер ще не виведено (але ми вже вивели? Ні, ми його тільки зараз виводимо)
+            // header() тут може не спрацювати, якщо exit викликано раніше, але збереження у файл працюватиме ідеально.
+        }
+        
+        echo $output;
+    });
+    // ==========================================
+
     $db = new \app\Models\Database();
     $connection = $db->getConnection();
 
@@ -51,9 +98,15 @@ if (strpos($uri, '/api/') === 0) {
     $questionModel = new \app\Models\QuestionModel($connection);
     $answerModel = new \app\Models\AnswerModel($connection);
 
+    $chatModel = new \app\Models\ChatModel($connection);
+    $messageModel = new \app\Models\MessageModel($connection);
+
     $controller = new \app\Controllers\AuthController($userModel);
     $testContoller = new \app\Controllers\TestController($testModel, $questionModel, $answerModel, $resultModel);
+    $chatController = new \app\Controllers\ChatController($chatModel, $messageModel, $userModel);
     $id = $_GET['id'] ?? null;
+
+    $userController = new \app\Controllers\UserController($userModel, $resultModel);
 
     if ($uriPath === '/api/auth/check') {
         $controller->check();
@@ -79,6 +132,46 @@ if (strpos($uri, '/api/') === 0) {
 
     if ($uriPath === '/api/auth/logout') {
         $controller->logout();
+        exit;
+    }
+
+    if ($uriPath === '/api/profile') {
+        $userController->get_profile();
+        exit;
+    }
+
+    if ($uriPath === '/api/profile/history') {
+        $userController->get_history();
+        exit;
+    }
+
+    if ($uriPath === '/api/profile/avatar/upload') {
+        $userController->upload_avatar();
+        exit;
+    }
+
+    if ($uriPath === '/api/profile/avatar/delete') {
+        $userController->delete_avatar();
+        exit;
+    }
+
+    if ($uriPath === '/api/chats') {
+        $chatController->get_chats();
+        exit;
+    }
+
+    if ($uriPath === '/api/chats/messages') {
+        $chatController->get_messages();
+        exit;
+    }
+
+    if ($uriPath === '/api/chats/start') {
+        $chatController->start_chat();
+        exit;
+    }
+
+    if ($uriPath === '/api/users/search') {
+        $chatController->search_users();
         exit;
     }
 

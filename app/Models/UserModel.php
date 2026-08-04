@@ -19,7 +19,7 @@ class UserModel {
     }
 
     public function findById(int $id): mixed {
-        $stmt = $this->db->prepare("SELECT id, login, full_name, role, group_name FROM users WHERE id = ?");
+        $stmt = $this->db->prepare("SELECT id, login, full_name, role, group_name, avatar_url FROM users WHERE id = ?");
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
@@ -33,7 +33,11 @@ class UserModel {
     public function update(int $id, string $login, string $password): bool {
         $stmt = $this->db->prepare("UPDATE users SET login = ?, password = ? WHERE id = ?");
         return $stmt->execute([$login, $password, $id]);
+    }
 
+    public function updateAvatar(int $id, ?string $avatarUrl): bool {
+        $stmt = $this->db->prepare("UPDATE users SET avatar_url = ? WHERE id = ?");
+        return $stmt->execute([$avatarUrl, $id]);
     }
 
     public function delete(int $id): bool {
@@ -42,7 +46,7 @@ class UserModel {
     }
 
     public function getAll(): array {
-        $stmt = $this->db->prepare("SELECT id, login, full_name, role, group_name FROM users");
+        $stmt = $this->db->prepare("SELECT id, login, full_name, role, group_name, avatar_url FROM users");
         $stmt->execute();
         return $stmt->fetchAll();
     }

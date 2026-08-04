@@ -1,16 +1,55 @@
 import { useState } from "react";
 import type { CreativeTest } from "../types";
 
+const EMPTY_TEST: CreativeTest = {
+  title: "",
+  description: "",
+  time_limit: 30,
+  is_fullscreen: false,
+  disable_copy: false,
+  questions: [],
+};
+
 export function useTestConstructor(refreshTests: () => void) {
   const [isCreating, setIsCreating] = useState(false);
-  const [newTest, setNewTest] = useState<CreativeTest>({
-    title: "",
-    description: "",
-    time_limit: 30,
-    is_fullscreen: false,
-    disable_copy: false,
-    questions: [],
-  });
+  const [editingTestId, setEditingTestId] = useState<number | null>(null);
+  const [newTest, setNewTest] = useState<CreativeTest>(EMPTY_TEST);
+
+  // Відкриває конструктор для редагування існуючого тесту
+  const handleEditTest = async (id: number) => {
+    try {
+      const res = await fetch(
+        `http://localhost/backend-kurswork/public/api/tests/get?id=${id}`,
+        { credentials: "include" }
+      );
+      if (!res.ok) throw new Error("Не вдалося завантажити тест");
+      const data = await res.json();
+
+      setNewTest({
+        title: data.title,
+        description: data.description,
+        time_limit: Number(data.time_limit),
+        is_fullscreen: Boolean(Number(data.is_fullscreen)),
+        disable_copy: Boolean(Number(data.disable_copy)),
+        questions: (data.questions ?? []).map((q: any) => ({
+          question_text: q.question_text,
+          points: Number(q.points),
+          type: q.type,
+          image_url: q.image_url ?? null,
+          answers: (q.answers ?? []).map((a: any) => ({
+            answer_text: a.answer_text,
+            is_correct: Boolean(Number(a.is_correct)),
+          })),
+        })),
+      });
+
+      setEditingTestId(id);
+      setIsCreating(true);
+    } catch (err) {
+      alert("Помилка при завантаженні тесту для редагування");
+      console.error(err);
+    }
+  };
 
   const handleAddQuestion = () => {
     setNewTest((prev) => ({
@@ -107,8 +146,15 @@ export function useTestConstructor(refreshTests: () => void) {
       return;
     }
 
-    fetch("http://localhost/backend-kurswork/public/api/tests/create", {
-      method: "POST",
+    // Якщо редагуємо існуючий тест — PATCH, якщо новий — POST
+    const isEditing = editingTestId !== null;
+    const url = isEditing
+      ? `http://localhost/backend-kurswork/public/api/tests/update?id=${editingTestId}`
+      : "http://localhost/backend-kurswork/public/api/tests/create";
+    const method = isEditing ? "PATCH" : "POST";
+
+    fetch(url, {
+      method,
       headers: { "Content-Type": "application/json" },
       credentials: "include",
       body: JSON.stringify(newTest),
@@ -125,16 +171,10 @@ export function useTestConstructor(refreshTests: () => void) {
         try {
           const data = JSON.parse(text);
           if (data.status === "success") {
-            alert("Тест успішно створено");
+            alert(isEditing ? "Тест успішно оновлено" : "Тест успішно створено");
             setIsCreating(false);
-            setNewTest({
-              title: "",
-              description: "",
-              time_limit: 30,
-              is_fullscreen: false,
-              disable_copy: false,
-              questions: [],
-            });
+            setEditingTestId(null);
+            setNewTest(EMPTY_TEST);
             refreshTests();
           } else {
             alert(data.message);
@@ -145,32 +185,23 @@ export function useTestConstructor(refreshTests: () => void) {
             text, err
           );
         }
-      });
-    // .then((data) => {
-    //   if (data.status === "success") {
-    //     alert("Тест успішно створено");
-    //     setIsCreating(false);
-    //     setNewTest({
-    //       title: "",
-    //       description: "",
-    //       time_limit: 30,
-    //       is_fullscreen: false,
-    //       disable_copy: false,
-    //       questions: [],
-    //     });
-    //     refreshTests();
-    //   } else {
-    //     alert(data.message || "Помилка при збереженні тесту");
-    //   }
-    // })
-    // .catch((err) => console.error(`Помилка: ${err}`));
+      })
+      .catch((err) => console.error(`Помилка: ${err}`));
+  };
+
+  const handleCancel = () => {
+    setIsCreating(false);
+    setEditingTestId(null);
+    setNewTest(EMPTY_TEST);
   };
 
   return {
     isCreating,
     setIsCreating,
+    editingTestId,
     newTest,
     setNewTest,
+    handleEditTest,
     handleAddQuestion,
     handleRemoveQuestion,
     handleQuestionChange,
@@ -178,5 +209,6 @@ export function useTestConstructor(refreshTests: () => void) {
     handleRemoveAnswer,
     handleAnswerChange,
     handleSaveTest,
+    handleCancel,
   };
 }
