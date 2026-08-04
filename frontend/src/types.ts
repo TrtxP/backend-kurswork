@@ -89,6 +89,7 @@ export interface TestListProps {
   role: string;
   tests: Test[];
   onStart: (id: number) => void;
+  onEdit: (id: number) => void;
   refreshTests: () => void;
 }
 
@@ -96,6 +97,8 @@ export interface TestPasserProps {
   test: FullTest;
   answers: UserAnswersState;
   timeLeft: number | null;
+  fullscreenPhase: import("./hooks/useTestPasser").FullscreenPhase;
+  violationCount: number;
   testResult: {
     score: string;
     correct: number;

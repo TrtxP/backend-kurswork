@@ -11,23 +11,6 @@ export default function Dashboard({
   initialTests: tests,
   refreshTests,
 }: DashboardProps) {
-  // const refreshTests = () => {
-  //   fetch("http://localhost/backend-kurswork/public/api/tests/all", {
-  //     credentials: "include",
-  //   })
-  //     .then((res) => {
-  //       if (!res.ok) throw new Error(`Помилка завантаження тестів`);
-  //       return res.json();
-  //     })
-  //     .then((data) => {
-  //       if (Array.isArray(data)) {
-  //         setTests(data);
-  //       } else if (data.status === "success" && Array.isArray(data.tests)) {
-  //         setTests(data.tests);
-  //       }
-  //     })
-  //     .catch((err) => console.error(`Помилка при отриманні тестів: ${err}`));
-  // };
 
   useEffect(() => {
     refreshTests();
@@ -54,7 +37,7 @@ export default function Dashboard({
         onRemoveAnswer={constructor.handleRemoveAnswer}
         onAnswerChange={constructor.handleAnswerChange}
         onSave={constructor.handleSaveTest}
-        onCancel={() => constructor.setIsCreating(false)}
+        onCancel={constructor.handleCancel}
       />
     );
   }
@@ -65,6 +48,8 @@ export default function Dashboard({
         test={passer.activeTest}
         answers={passer.answers}
         timeLeft={passer.timeLeft}
+        fullscreenPhase={passer.fullscreenPhase}
+        violationCount={passer.violationCount}
         testResult={passer.testResult}
         onRadioSelect={passer.handleRadioSelect}
         onCheckboxSelect={passer.handleCheckboxSelect}
@@ -106,6 +91,7 @@ export default function Dashboard({
         role={role}
         tests={tests}
         onStart={passer.handleStartTest}
+        onEdit={constructor.handleEditTest}
         refreshTests={refreshTests}
       />
     </div>

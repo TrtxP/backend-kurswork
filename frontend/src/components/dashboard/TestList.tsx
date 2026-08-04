@@ -4,6 +4,7 @@ export default function TestList({
   role,
   tests,
   onStart,
+  onEdit,
   refreshTests,
 }: TestListProps) {
   return (
@@ -31,16 +32,7 @@ export default function TestList({
                     <div className="d-flex gap-2">
                       <button
                         className="btn btn-outline-warning btn-sm flex-grow-1"
-                        onClick={() => {
-                          fetch(
-                            `http://localhost/backend-kurswork/public/api/tests/update?id=${test.id}`,
-                            {
-                              method: "PATCH",
-                              headers: { "Content-Type": "application/json" },
-                              credentials: "include",
-                            },
-                          ).then(() => refreshTests());
-                        }}
+                        onClick={() => onEdit(test.id)}
                       >
                         Редагувати
                       </button>

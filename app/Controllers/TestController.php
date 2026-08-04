@@ -214,7 +214,9 @@ class TestController
         $this->questionModel->deleteByTestId($id);
 
         foreach ($data['questions'] as $qData) {
-            $newQuestionId = $this->questionModel->create($id, $qData['question_text'], $qData['points'], $qData['type'], $qData['image_url']);
+            $enumType = Type::from($qData['type']);
+            $imageUrl = $qData['image_url'] ?? null;
+            $newQuestionId = $this->questionModel->create($id, $qData['question_text'], $qData['points'], $enumType, $imageUrl);
 
             foreach ($qData['answers'] as $aData) {
                 $this->answerModel->create($newQuestionId, $aData['answer_text'], $aData['is_correct']);
