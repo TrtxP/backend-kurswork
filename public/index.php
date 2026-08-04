@@ -93,6 +93,11 @@ if (strpos($uri, '/api/') === 0) {
         exit;
     }
 
+    if ($uriPath === '/api/profile/history') {
+        $userController->get_history();
+        exit;
+    }
+
     if ($uriPath === '/api/profile/avatar/upload') {
         $userController->upload_avatar();
         exit;

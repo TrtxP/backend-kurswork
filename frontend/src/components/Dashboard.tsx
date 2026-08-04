@@ -7,6 +7,7 @@ import TestPasser from "./dashboard/TestPasser";
 import TestConstructor from "./dashboard/TestConstructor";
 import UserProfile from "./dashboard/UserProfile";
 import Messenger from "./dashboard/Messenger";
+import TestHistory from "./dashboard/TestHistory";
 
 export default function Dashboard({
   role,
@@ -16,6 +17,7 @@ export default function Dashboard({
 }: DashboardProps) {
   const [showProfile, setShowProfile] = useState(false);
   const [showMessenger, setShowMessenger] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   
   // Ми створюємо об'єкт currentUser з доступних пропсів (оскільки повний об'єкт тут відсутній, 
   // але ID ми знаємо на бекенді через сесію. Для Messenger нам треба знати хоча б id поточного користувача. 
@@ -49,6 +51,10 @@ export default function Dashboard({
 
   if (showMessenger) {
     return <Messenger onClose={() => setShowMessenger(false)} currentUser={currentUser} />;
+  }
+
+  if (showHistory) {
+    return <TestHistory onClose={() => setShowHistory(false)} />;
   }
 
   if (constructor.isCreating) {
@@ -101,6 +107,12 @@ export default function Dashboard({
               onClick={() => setShowProfile(true)}
             >
               Переглянути профіль
+            </button>
+            <button
+              className="btn btn-primary btn-sm"
+              onClick={() => setShowHistory(true)}
+            >
+              Переглянути історію тестів
             </button>
             <button
               className="btn btn-outline-primary btn-sm"
