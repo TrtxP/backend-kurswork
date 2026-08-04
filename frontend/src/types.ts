@@ -6,6 +6,7 @@ export interface RegisterCheckResponse {
 export interface AuthCheckResponse {
   isLoggedIn: boolean;
   role?: "admin" | "student";
+  full_name?: string;
 }
 
 export interface User {
@@ -15,6 +16,7 @@ export interface User {
   full_name: string;
   role: string;
   group_name: string;
+  avatar_url?: string | null;
   created_at: string;
 }
 
@@ -62,6 +64,7 @@ export interface FullTest extends Test {
 
 export interface DashboardProps {
   role: "admin" | "student";
+  full_name?: string;
   initialTests: Test[];
   refreshTests: () => void;
 }

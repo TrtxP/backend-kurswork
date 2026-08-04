@@ -1,16 +1,19 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { DashboardProps } from "../types";
 import { useTestConstructor } from "../hooks/useTestConstructor";
 import { useTestPasser } from "../hooks/useTestPasser";
 import TestList from "./dashboard/TestList";
 import TestPasser from "./dashboard/TestPasser";
 import TestConstructor from "./dashboard/TestConstructor";
+import UserProfile from "./dashboard/UserProfile";
 
 export default function Dashboard({
   role,
+  full_name,
   initialTests: tests,
   refreshTests,
 }: DashboardProps) {
+  const [showProfile, setShowProfile] = useState(false);
 
   useEffect(() => {
     refreshTests();
@@ -24,6 +27,10 @@ export default function Dashboard({
       credentials: "include",
     }).then(() => window.location.reload());
   };
+
+  if (showProfile) {
+    return <UserProfile onClose={() => setShowProfile(false)} />;
+  }
 
   if (constructor.isCreating) {
     return (
@@ -65,6 +72,16 @@ export default function Dashboard({
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h1 className="h2">Освітня платформа</h1>
+          <p className="text-muted mb-2">
+            {role === "admin" ? "Викладач: " : "Студент: "}
+            {full_name || "Невідомо"}
+          </p>
+          <button
+            className="btn btn-outline-info btn-sm"
+            onClick={() => setShowProfile(true)}
+          >
+            Переглянути профіль
+          </button>
         </div>
         <button className="btn btn-outline-danger" onClick={handleLogout}>
           Вийти

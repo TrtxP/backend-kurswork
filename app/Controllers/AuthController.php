@@ -151,10 +151,12 @@ class AuthController
     public function check(): void
     {
         if (isset($_SESSION['user_id'])) {
+            $user = $this->userModel->findById($_SESSION['user_id']);
             http_response_code(200);
             echo json_encode([
                 "isLoggedIn" => true,
-                "role" => $_SESSION['role']
+                "role" => $_SESSION['role'],
+                "full_name" => $user ? $user['full_name'] : ''
             ]);
         } else {
             http_response_code(401);

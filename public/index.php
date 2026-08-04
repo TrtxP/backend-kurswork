@@ -55,6 +55,8 @@ if (strpos($uri, '/api/') === 0) {
     $testContoller = new \app\Controllers\TestController($testModel, $questionModel, $answerModel, $resultModel);
     $id = $_GET['id'] ?? null;
 
+    $userController = new \app\Controllers\UserController($userModel, $resultModel);
+
     if ($uriPath === '/api/auth/check') {
         $controller->check();
         exit;
@@ -79,6 +81,21 @@ if (strpos($uri, '/api/') === 0) {
 
     if ($uriPath === '/api/auth/logout') {
         $controller->logout();
+        exit;
+    }
+
+    if ($uriPath === '/api/profile') {
+        $userController->get_profile();
+        exit;
+    }
+
+    if ($uriPath === '/api/profile/avatar/upload') {
+        $userController->upload_avatar();
+        exit;
+    }
+
+    if ($uriPath === '/api/profile/avatar/delete') {
+        $userController->delete_avatar();
         exit;
     }
 
