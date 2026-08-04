@@ -55,11 +55,11 @@ The project uses [Ratchet PHP](http://socketo.me/) for real-time chat functional
    - Run `composer install` to download all necessary packages (including Ratchet) into the `vendor/` directory.
    - Run `composer dump-autoload` to generate the correct autoload mappings.
 
-2. Start the WebSocket Server:
+2. Start the WebSocket Server (Required for Messaging):
    - The WebSocket server must run continuously in the background for chats to work.
-   - Open a new terminal in the root directory.
-   - Run the command: `php bin/websocket.php`
-   - You should see a message indicating the WebSocket Server has started. Do not close this terminal while using the application.
+   - For Windows users: Simply double-click the `start_websockets.bat` script located in the root folder (`c:\wamp64\www\backend-kurswork\start_websockets.bat`).
+   - Alternatively, open a terminal in the root directory and run the command manually: `php bin/websocket.php`
+   - You should see a message indicating the WebSocket Server has started. Do not close this terminal window while using the application.
 
 ## Frontend setup (Vite)
 
