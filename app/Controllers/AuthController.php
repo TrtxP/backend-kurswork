@@ -86,13 +86,13 @@ class AuthController
         $groupName = trim($data['group_name'] ?? '');
         $role = $data['role'] === 'student' ? Role::Student : Role::Admin;
 
-        if (!preg_match('/^[a-zA-Z0-9_]{3, 20}$/', $login)) {
+        if (!preg_match('/^[a-zA-Z0-9_]{3,20}$/', $login)) {
             http_response_code(400);
             echo json_encode(["status" => "error", "message" => "Некоректний формат логіну"]);
             exit;
         }
 
-        if (!preg_match('/^[0-9]{3, 6}$/', $password)) {
+        if (!preg_match('/^[0-9]{3,6}$/', $password)) {
             http_response_code(400);
             echo json_encode(["status" => "error", "message" => "Некоректний формат паролю"]);
             exit;
@@ -104,9 +104,10 @@ class AuthController
             exit;
         }
 
-        if (!preg_match('/^[А-ЯІЇЄҐа-яіїєґA-Z0-9\-]{2, 15}$/', $groupName)) {
+        if (!preg_match('/^[А-ЯІЇЄҐа-яіїєґA-Z0-9\-]{2,15}$/u', $groupName)) {
             http_response_code(400);
             echo json_encode(["status" => "error", "message" => "Некоректний шифр групи"]);
+            exit;
         }
 
         $isSignedUp = $this->userModel->add($login, $password, $fullName, $role, $groupName);
